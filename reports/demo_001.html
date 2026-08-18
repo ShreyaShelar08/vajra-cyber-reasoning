@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fix Certificate — demo_001</title>
+<style>
+  :root {
+    --bg: #0b0d12;
+    --panel: #12151c;
+    --panel-2: #171b24;
+    --border: #262b36;
+    --text: #e6e9ef;
+    --muted: #8b93a3;
+    --accent: #5b8cff;
+    --green: #35c98f;
+    --red: #ff5d6c;
+    --amber: #f5b942;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    line-height: 1.55; padding: 40px 20px 80px;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  header { margin-bottom: 28px; }
+  .eyebrow { color: var(--muted); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+  h1 { font-size: 28px; margin: 6px 0 4px; }
+  .meta { color: var(--muted); font-size: 14px; }
+
+  .verdict {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: 10px; font-weight: 700;
+    font-size: 15px; margin: 18px 0 28px; border: 1px solid var(--border);
+  }
+  .verdict-pass { background: rgba(53,201,143,.12); color: var(--green); border-color: rgba(53,201,143,.35); }
+  .verdict-fail { background: rgba(255,93,108,.12); color: var(--red); border-color: rgba(255,93,108,.35); }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 14px; padding: 22px 24px; margin-bottom: 20px;
+  }
+  .card h2 { margin-top: 0; font-size: 16px; letter-spacing: .02em; color: var(--text); }
+  .card h2 .sub { color: var(--muted); font-weight: 400; font-size: 13px; }
+
+  pre.log, pre.code {
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; overflow-x: auto; font-size: 12.5px; color: #c9d1e0;
+    max-height: 320px; overflow-y: auto; white-space: pre-wrap; word-break: break-word;
+  }
+  pre.diff {
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; overflow-x: auto; font-size: 13px; max-height: 420px; overflow-y: auto;
+  }
+  .diff-add { color: var(--green); }
+  .diff-del { color: var(--red); }
+
+  .stage { border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; background: var(--panel-2); }
+  .stage-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .stage-title { font-weight: 600; font-size: 14px; }
+
+  .badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; letter-spacing: .04em; }
+  .badge.pass { background: rgba(53,201,143,.15); color: var(--green); }
+  .badge.fail { background: rgba(255,93,108,.15); color: var(--red); }
+  .badge.unknown { background: rgba(139,147,163,.15); color: var(--muted); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } }
+
+  .explanation { color: #cdd3e0; font-size: 14.5px; }
+  footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 40px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Automated Repair Pipeline — Fix Certificate</div>
+    <h1>Run: demo_001</h1>
+    <div class="meta">Generated 2026-08-18 07:44:07 UTC &middot; Model: qwen2.5-coder:7b</div>
+  </header>
+
+  <div class="verdict verdict-pass">
+    &#10003; VERIFIED FIX
+  </div>
+
+  <div class="card">
+    <h2>1. Crash Trace <span class="sub">— as reproduced with AddressSanitizer</span></h2>
+    <pre class="log">[harness] out_buf_size=8 num_bytes=64
+=================================================================
+==610==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000018 at pc 0x55d082d1791d bp 0x7ffceafaf260 sp 0x7ffceafaf250
+WRITE of size 1 at 0x502000000018 thread T0
+    #0 0x55d082d1791c in tinfl_copy_literals /home/claude/miniz-autopatch/fake_crash/vulnerable_function.c:45
+    #1 0x55d082d1779c in main /home/claude/miniz-autopatch/fake_crash/harness.c:57
+    #2 0x7f867142a1c9  (/lib/x86_64-linux-gnu/libc.so.6+0x2a1c9) (BuildId: 8e9fd827446c24067541ac5390e6f527fb5947bb)
+    #3 0x7f867142a28a in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2a28a) (BuildId: 8e9fd827446c24067541ac5390e6f527fb5947bb)
+    #4 0x55d082d17304 in _start (/home/claude/miniz-autopatch/fake_crash/harness_asan+0x1304) (BuildId: 9f4282557f6de029ebe87f5beffe253a1b4256aa)
+
+0x502000000018 is located 0 bytes after 8-byte region [0x502000000010,0x502000000018)
+allocated by thread T0 here:
+    #0 0x7f86718fd9c7 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69
+    #1 0x55d082d17712 in main /home/claude/miniz-autopatch/fake_crash/harness.c:52
+    #2 0x7f867142a1c9  (/lib/x86_64-linux-gnu/libc.so.6+0x2a1c9) (BuildId: 8e9fd827446c24067541ac5390e6f527fb5947bb)
+    #3 0x7f867142a28a in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2a28a) (BuildId: 8e9fd827446c24067541ac5390e6f527fb5947bb)
+    #4 0x55d082d17304 in _start (/home/claude/miniz-autopatch/fake_crash/harness_asan+0x1304) (BuildId: 9f4282557f6de029ebe87f5beffe253a1b4256aa)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /home/claude/miniz-autopatch/fake_crash/vulnerable_function.c:45 in tinfl_copy_literals
+Shadow bytes around the buggy address:
+  0x501ffffffd80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x501ffffffe00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x501ffffffe80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x501fffffff00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x501fffffff80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=&gt;0x502000000000: fa fa 00[fa]fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000080: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000100: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000180: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000200: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000280: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==610==ABORTING
+</pre>
+  </div>
+
+  <div class="card">
+    <h2>2. Vulnerable Function <span class="sub">— exact source sent to the model (not the whole repo)</span></h2>
+    <pre class="code">/*
+ * vulnerable_function.c
+ *
+ * SYNTHETIC / DEMO BUG â€” this is a simplified stand-in for the kind of
+ * literal-copy loop found in miniz&#x27;s low-level decompressor (miniz_tinfl.c).
+ * It is used to prove the auto-patch pipeline end-to-end before a real
+ * fuzzer-found crash is available (per the &quot;fake/sample crash&quot; test step).
+ *
+ * The bug: num_bytes (attacker/input-controlled, comes from the compressed
+ * stream&#x27;s length field) is copied into pOut_buf with NO check against
+ * out_buf_size. A crafted input with a large literal-run length causes a
+ * heap-buffer-overflow write.
+ */
+
+#include &lt;stddef.h&gt;
+#include &lt;stdint.h&gt;
+
+typedef unsigned char mz_uint8;
+typedef unsigned int  mz_uint32;
+typedef int mz_bool;
+#define MZ_TRUE 1
+#define MZ_FALSE 0
+
+/*
+ * tinfl_copy_literals - copies `num_bytes` literal bytes from the input
+ * stream into the output buffer during decompression.
+ *
+ * pOut_buf      - destination buffer
+ * out_buf_size  - allocated size of pOut_buf
+ * pIn_buf       - source buffer (compressed stream data)
+ * in_buf_size   - allocated size of pIn_buf
+ * num_bytes     - number of literal bytes to copy, READ FROM THE INPUT STREAM
+ */
+mz_bool tinfl_copy_literals(mz_uint8 *pOut_buf, size_t out_buf_size,
+                             const mz_uint8 *pIn_buf, size_t in_buf_size,
+                             mz_uint32 num_bytes)
+{
+    mz_uint32 i;
+
+    /* BUG: no check that num_bytes &lt;= out_buf_size (or &lt;= in_buf_size)
+     * before writing. A malicious/corrupt stream can set num_bytes larger
+     * than the destination buffer, causing a heap-buffer-overflow write. */
+    for (i = 0; i &lt; num_bytes; i++)
+    {
+        pOut_buf[i] = pIn_buf[i];
+    }
+
+    return MZ_TRUE;
+}
+</pre>
+  </div>
+
+  <div class="card">
+    <h2>3. Model-Suggested Patch</h2>
+    <pre class="diff">--- vulnerable_function.c
++++ vulnerable_function.c
+@@ -38,9 +38,15 @@
+     mz_uint32 i;
+ 
+-    /* BUG: no check that num_bytes &lt;= out_buf_size (or &lt;= in_buf_size)
+-     * before writing. A malicious/corrupt stream can set num_bytes larger
+-     * than the destination buffer, causing a heap-buffer-overflow write. */
+-    for (i = 0; i &lt; num_bytes; i++)
++    /* FIX: clamp the copy length to the smaller of the destination buffer
++     * and source buffer sizes. A malicious/corrupt stream can no longer
++     * force a write or read past the end of either buffer. */
++    mz_uint32 safe_bytes = num_bytes;
++    if (safe_bytes &gt; out_buf_size)
++        safe_bytes = (mz_uint32)out_buf_size;
++    if (safe_bytes &gt; in_buf_size)
++        safe_bytes = (mz_uint32)in_buf_size;
++
++    for (i = 0; i &lt; safe_bytes; i++)
+     {
+         pOut_buf[i] = pIn_buf[i];
+     }
+</pre>
+    <p class="explanation"><strong>Model explanation:</strong> The crash is a heap-buffer-overflow write in tinfl_copy_literals(). The loop copies `num_bytes` bytes into `pOut_buf`, but `num_bytes` is attacker/stream-controlled and was never checked against `out_buf_size` (the actual allocated size of the destination). When a corrupt or malicious stream declares a literal run longer than the output buffer, the loop writes past the end of the heap allocation. The fix clamps the effective copy length to the minimum of `out_buf_size` and `in_buf_size` before the loop runs, so the function can never write past the destination or read past the source, while leaving behavior for valid inputs unchanged.</p>
+  </div>
+
+  <div class="card">
+    <h2>4. Verification <span class="sub">— independent proof the patch works</span></h2>
+
+    <div class="grid2">
+      <div class="stage">
+        <div class="stage-head"><span class="stage-title">Before patch: input crashes original code?</span>
+          <span class="badge pass">PASS</span>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-head"><span class="stage-title">After patch: same input no longer crashes?</span>
+          <span class="badge pass">PASS</span>
+        </div>
+      </div>
+    </div>
+
+    
+        <div class="stage">
+          <div class="stage-head">
+            <span class="stage-title">Apply patch</span>
+            <span class="badge pass">PASS</span>
+          </div>
+          <pre class="log">(Stripping trailing CRs from patch; use --binary to disable.)
+patching file vulnerable_function.c
+</pre>
+        </div>
+    
+        <div class="stage">
+          <div class="stage-head">
+            <span class="stage-title">Rebuild (ASan)</span>
+            <span class="badge pass">PASS</span>
+          </div>
+          
+        </div>
+    
+        <div class="stage">
+          <div class="stage-head">
+            <span class="stage-title">Replay original crashing input</span>
+            <span class="badge pass">PASS</span>
+          </div>
+          <pre class="log">[harness] out_buf_size=8 num_bytes=64
+[harness] completed without crash
+</pre>
+        </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="stage-title">Regression tests (existing behavior unaffected)</span>
+        <span class="badge pass">PASS</span>
+      </div>
+      <table>
+        <tr><th>Test</th><th>Result</th><th>Detail</th></tr>
+        <tr>
+              <td>empty_copy</td>
+              <td><span class="badge pass">PASS</span></td>
+              <td>exit=0</td>
+            </tr><tr>
+              <td>exact_fit</td>
+              <td><span class="badge pass">PASS</span></td>
+              <td>exit=0</td>
+            </tr><tr>
+              <td>small_copy</td>
+              <td><span class="badge pass">PASS</span></td>
+              <td>exit=0</td>
+            </tr><tr>
+              <td>max_valid</td>
+              <td><span class="badge pass">PASS</span></td>
+              <td>exit=0</td>
+            </tr>
+      </table>
+    </div>
+
+    <p class="meta">Total verification time: 10.49s</p>
+  </div>
+
+  <footer>
+    Generated automatically by the local repair pipeline (Ollama + verify_patch.py).<br/>
+    Fake/demo runs are clearly labeled as synthetic in the accompanying README.
+  </footer>
+
+</div>
+</body>
+</html>

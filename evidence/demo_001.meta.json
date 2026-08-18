@@ -1,0 +1,9 @@
+{
+  "model": "qwen2.5-coder:7b",
+  "trace_file": "fake_crash\\crash_trace.txt",
+  "function_file": "fake_crash\\vulnerable_function.c",
+  "prompt_chars": 5658,
+  "patch_file": "evidence\\demo_001.diff",
+  "raw_response_file": "evidence\\demo_001.raw.txt",
+  "explanation": "The crash is a heap-buffer-overflow write in tinfl_copy_literals(). The loop copies `num_bytes` bytes into `pOut_buf`, but `num_bytes` is attacker/stream-controlled and was never checked against `out_buf_size` (the actual allocated size of the destination). When a corrupt or malicious stream declares a literal run longer than the output buffer, the loop writes past the end of the heap allocation. The fix clamps the effective copy length to the minimum of `out_buf_size` and `in_buf_size` before the loop runs, so the function can never write past the destination or read past the source, while leaving behavior for valid inputs unchanged."
+}

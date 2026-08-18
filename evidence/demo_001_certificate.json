@@ -1,0 +1,75 @@
+{
+  "run_id": "demo_001",
+  "generated_at": "2026-08-18 07:44:07 UTC",
+  "crash_trace": "[harness] out_buf_size=8 num_bytes=64\n=================================================================\n==610==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000018 at pc 0x55d082d1791d bp 0x7ffceafaf260 sp 0x7ffceafaf250\nWRITE of size 1 at 0x502000000018 thread T0\n    #0 0x55d082d1791c in tinfl_copy_literals /home/claude/miniz-autopatch/fake_crash/vulnerable_function.c:45\n    #1 0x55d082d1779c in main /home/claude/miniz-autopatch/fake_crash/harness.c:57\n    #2 0x7f867142a1c9  (/lib/x86_64-linux-gnu/libc.so.6+0x2a1c9) (BuildId: 8e9fd827446c24067541ac5390e6f527fb5947bb)\n    #3 0x7f867142a28a in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2a28a) (BuildId: 8e9fd827446c24067541ac5390e6f527fb5947bb)\n    #4 0x55d082d17304 in _start (/home/claude/miniz-autopatch/fake_crash/harness_asan+0x1304) (BuildId: 9f4282557f6de029ebe87f5beffe253a1b4256aa)\n\n0x502000000018 is located 0 bytes after 8-byte region [0x502000000010,0x502000000018)\nallocated by thread T0 here:\n    #0 0x7f86718fd9c7 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69\n    #1 0x55d082d17712 in main /home/claude/miniz-autopatch/fake_crash/harness.c:52\n    #2 0x7f867142a1c9  (/lib/x86_64-linux-gnu/libc.so.6+0x2a1c9) (BuildId: 8e9fd827446c24067541ac5390e6f527fb5947bb)\n    #3 0x7f867142a28a in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2a28a) (BuildId: 8e9fd827446c24067541ac5390e6f527fb5947bb)\n    #4 0x55d082d17304 in _start (/home/claude/miniz-autopatch/fake_crash/harness_asan+0x1304) (BuildId: 9f4282557f6de029ebe87f5beffe253a1b4256aa)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /home/claude/miniz-autopatch/fake_crash/vulnerable_function.c:45 in tinfl_copy_literals\nShadow bytes around the buggy address:\n  0x501ffffffd80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x501ffffffe00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x501ffffffe80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x501fffffff00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x501fffffff80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x502000000000: fa fa 00[fa]fa fa fa fa fa fa fa fa fa fa fa fa\n  0x502000000080: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x502000000100: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x502000000180: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x502000000200: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x502000000280: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==610==ABORTING\n",
+  "vulnerable_function_source": "/*\n * vulnerable_function.c\n *\n * SYNTHETIC / DEMO BUG \u00e2\u20ac\u201d this is a simplified stand-in for the kind of\n * literal-copy loop found in miniz's low-level decompressor (miniz_tinfl.c).\n * It is used to prove the auto-patch pipeline end-to-end before a real\n * fuzzer-found crash is available (per the \"fake/sample crash\" test step).\n *\n * The bug: num_bytes (attacker/input-controlled, comes from the compressed\n * stream's length field) is copied into pOut_buf with NO check against\n * out_buf_size. A crafted input with a large literal-run length causes a\n * heap-buffer-overflow write.\n */\n\n#include <stddef.h>\n#include <stdint.h>\n\ntypedef unsigned char mz_uint8;\ntypedef unsigned int  mz_uint32;\ntypedef int mz_bool;\n#define MZ_TRUE 1\n#define MZ_FALSE 0\n\n/*\n * tinfl_copy_literals - copies `num_bytes` literal bytes from the input\n * stream into the output buffer during decompression.\n *\n * pOut_buf      - destination buffer\n * out_buf_size  - allocated size of pOut_buf\n * pIn_buf       - source buffer (compressed stream data)\n * in_buf_size   - allocated size of pIn_buf\n * num_bytes     - number of literal bytes to copy, READ FROM THE INPUT STREAM\n */\nmz_bool tinfl_copy_literals(mz_uint8 *pOut_buf, size_t out_buf_size,\n                             const mz_uint8 *pIn_buf, size_t in_buf_size,\n                             mz_uint32 num_bytes)\n{\n    mz_uint32 i;\n\n    /* BUG: no check that num_bytes <= out_buf_size (or <= in_buf_size)\n     * before writing. A malicious/corrupt stream can set num_bytes larger\n     * than the destination buffer, causing a heap-buffer-overflow write. */\n    for (i = 0; i < num_bytes; i++)\n    {\n        pOut_buf[i] = pIn_buf[i];\n    }\n\n    return MZ_TRUE;\n}\n",
+  "patch": {
+    "model": "qwen2.5-coder:7b",
+    "diff": "--- vulnerable_function.c\n+++ vulnerable_function.c\n@@ -38,9 +38,15 @@\n     mz_uint32 i;\n \n-    /* BUG: no check that num_bytes <= out_buf_size (or <= in_buf_size)\n-     * before writing. A malicious/corrupt stream can set num_bytes larger\n-     * than the destination buffer, causing a heap-buffer-overflow write. */\n-    for (i = 0; i < num_bytes; i++)\n+    /* FIX: clamp the copy length to the smaller of the destination buffer\n+     * and source buffer sizes. A malicious/corrupt stream can no longer\n+     * force a write or read past the end of either buffer. */\n+    mz_uint32 safe_bytes = num_bytes;\n+    if (safe_bytes > out_buf_size)\n+        safe_bytes = (mz_uint32)out_buf_size;\n+    if (safe_bytes > in_buf_size)\n+        safe_bytes = (mz_uint32)in_buf_size;\n+\n+    for (i = 0; i < safe_bytes; i++)\n     {\n         pOut_buf[i] = pIn_buf[i];\n     }\n",
+    "explanation": "The crash is a heap-buffer-overflow write in tinfl_copy_literals(). The loop copies `num_bytes` bytes into `pOut_buf`, but `num_bytes` is attacker/stream-controlled and was never checked against `out_buf_size` (the actual allocated size of the destination). When a corrupt or malicious stream declares a literal run longer than the output buffer, the loop writes past the end of the heap allocation. The fix clamps the effective copy length to the minimum of `out_buf_size` and `in_buf_size` before the loop runs, so the function can never write past the destination or read past the source, while leaving behavior for valid inputs unchanged."
+  },
+  "verification": {
+    "started_at": 1787039036.4952955,
+    "patch_file": "evidence\\demo_001.diff",
+    "stages": {
+      "before_patch_build": {
+        "passed": true,
+        "log": ""
+      },
+      "before_patch_crash_replay": {
+        "expected": "CRASH (proves the bug is real)",
+        "actually_crashed": true,
+        "exit_code": 3221226356,
+        "output_excerpt": "[harness] out_buf_size=8 num_bytes=64\n"
+      },
+      "apply_patch": {
+        "passed": true,
+        "method": "patch -p0",
+        "log": "(Stripping trailing CRs from patch; use --binary to disable.)\npatching file vulnerable_function.c\n"
+      },
+      "rebuild": {
+        "passed": true,
+        "log": ""
+      },
+      "crash_replay": {
+        "passed": true,
+        "expected": "NO CRASH",
+        "exit_code": 0,
+        "output_excerpt": "[harness] out_buf_size=8 num_bytes=64\n[harness] completed without crash\n"
+      },
+      "regression_tests": {
+        "passed": true,
+        "tests": [
+          {
+            "test": "empty_copy",
+            "passed": true,
+            "exit_code": 0,
+            "output_excerpt": "[harness] out_buf_size=8 num_bytes=0\n[harness] completed without crash\n"
+          },
+          {
+            "test": "exact_fit",
+            "passed": true,
+            "exit_code": 0,
+            "output_excerpt": "[harness] out_buf_size=8 num_bytes=8\n[harness] completed without crash\n"
+          },
+          {
+            "test": "small_copy",
+            "passed": true,
+            "exit_code": 0,
+            "output_excerpt": "[harness] out_buf_size=32 num_bytes=5\n[harness] completed without crash\n"
+          },
+          {
+            "test": "max_valid",
+            "passed": true,
+            "exit_code": 0,
+            "output_excerpt": "[harness] out_buf_size=64 num_bytes=64\n[harness] completed without crash\n"
+          }
+        ]
+      }
+    },
+    "overall_pass": true,
+    "finished_at": 1787039046.9823823,
+    "duration_seconds": 10.49
+  },
+  "verdict": "VERIFIED_FIX"
+}

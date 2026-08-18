@@ -1,0 +1,63 @@
+{
+  "started_at": 1787039036.4952955,
+  "patch_file": "evidence\\demo_001.diff",
+  "stages": {
+    "before_patch_build": {
+      "passed": true,
+      "log": ""
+    },
+    "before_patch_crash_replay": {
+      "expected": "CRASH (proves the bug is real)",
+      "actually_crashed": true,
+      "exit_code": 3221226356,
+      "output_excerpt": "[harness] out_buf_size=8 num_bytes=64\n"
+    },
+    "apply_patch": {
+      "passed": true,
+      "method": "patch -p0",
+      "log": "(Stripping trailing CRs from patch; use --binary to disable.)\npatching file vulnerable_function.c\n"
+    },
+    "rebuild": {
+      "passed": true,
+      "log": ""
+    },
+    "crash_replay": {
+      "passed": true,
+      "expected": "NO CRASH",
+      "exit_code": 0,
+      "output_excerpt": "[harness] out_buf_size=8 num_bytes=64\n[harness] completed without crash\n"
+    },
+    "regression_tests": {
+      "passed": true,
+      "tests": [
+        {
+          "test": "empty_copy",
+          "passed": true,
+          "exit_code": 0,
+          "output_excerpt": "[harness] out_buf_size=8 num_bytes=0\n[harness] completed without crash\n"
+        },
+        {
+          "test": "exact_fit",
+          "passed": true,
+          "exit_code": 0,
+          "output_excerpt": "[harness] out_buf_size=8 num_bytes=8\n[harness] completed without crash\n"
+        },
+        {
+          "test": "small_copy",
+          "passed": true,
+          "exit_code": 0,
+          "output_excerpt": "[harness] out_buf_size=32 num_bytes=5\n[harness] completed without crash\n"
+        },
+        {
+          "test": "max_valid",
+          "passed": true,
+          "exit_code": 0,
+          "output_excerpt": "[harness] out_buf_size=64 num_bytes=64\n[harness] completed without crash\n"
+        }
+      ]
+    }
+  },
+  "overall_pass": true,
+  "finished_at": 1787039046.9823823,
+  "duration_seconds": 10.49
+}
