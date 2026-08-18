@@ -1,0 +1,13 @@
+=== VAJRA — Detection Evidence: Hang / DoS Bug ===
+Target: miniz (miniz_zip.c) — ZIP extraction via mz_zip_reader_extract_to_heap / file_stat
+Input file: hang_input_1.zip
+Reproduction command: timeout 5 ./fuzz_target hang_input_1.zip
+Result: Process did not terminate within 5 seconds (exit code 124) — confirmed hang
+
+Suspected cause: malformed size/length field in local file header (raw bytes show
+0xFFFFFFFF pattern near the compressed-size/extra-field-length area), likely causing
+an unbounded or excessive loop during parsing.
+
+Relevance: A malformed archive causing indefinite hang is a denial-of-service risk —
+directly relevant to malicious-archive attacks (APT36/SideCopy-style) against parsers
+in defence software.
