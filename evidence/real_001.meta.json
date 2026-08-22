@@ -1,0 +1,9 @@
+{
+  "run_id": "real_001",
+  "model": "manual-patch",
+  "vulnerability": "heap-buffer-overflow in copy_zip_comment (miniz_zip.c mz_zip_file_stat_internal)",
+  "root_cause": "attacker-controlled filename_len and extra_len fields from ZIP central directory header used in memcpy source offset with no bounds check against actual buffer size",
+  "fix_summary": "Added bounds check before memcpy: validates that CENTRAL_DIR_HEADER_SIZE + filename_len + extra_len + n does not exceed p_buf_len before copying",
+  "cwe": "CWE-125 (Out-of-bounds Read)",
+  "patch_file": "evidence/real_001.diff"
+}

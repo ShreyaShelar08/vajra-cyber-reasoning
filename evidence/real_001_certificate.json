@@ -1,0 +1,75 @@
+{
+  "run_id": "real_001",
+  "generated_at": "2026-08-22 11:20:43 UTC",
+  "crash_trace": "=================================================================\n==604==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x50600000008e at pc 0x74b1494fb42e bp 0x7ffe7ba72f00 sp 0x7ffe7ba726a8\nREAD of size 100 at 0x50600000008e thread T0\n    #0 0x74b1494fb42d in memcpy ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors_memintrinsics.inc:115\n    #1 0x56f5282f6745 in copy_zip_comment /mnt/c/Users/Personal/Desktop/vajra-cyber-reasoning/real_crash/vulnerable_func.c:39\n    #2 0x56f5282f6527 in main /mnt/c/Users/Personal/Desktop/vajra-cyber-reasoning/real_crash/harness.c:22\n    #3 0x74b14902a1c9 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58\n    #4 0x74b14902a28a in __libc_start_main_impl ../csu/libc-start.c:360\n    #5 0x56f5282f6284 in _start (/mnt/c/Users/Personal/Desktop/vajra-cyber-reasoning/real_crash/test_harness+0x1284) (BuildId: 257f724e001c87db3b5d70b0aac890eaeea13a5d)\n\n0x50600000008e is located 46 bytes after 64-byte region [0x506000000020,0x506000000060)\nallocated by thread T0 here:\n    #0 0x74b1494fd9c7 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69\n    #1 0x56f5282f64ae in main /mnt/c/Users/Personal/Desktop/vajra-cyber-reasoning/real_crash/harness.c:16\n    #2 0x74b14902a1c9 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58\n    #3 0x74b14902a28a in __libc_start_main_impl ../csu/libc-start.c:360\n    #4 0x56f5282f6284 in _start (/mnt/c/Users/Personal/Desktop/vajra-cyber-reasoning/real_crash/test_harness+0x1284) (BuildId: 257f724e001c87db3b5d70b0aac890eaeea13a5d)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors_memintrinsics.inc:115 in memcpy\nShadow bytes around the buggy address:\n  0x505ffffffe00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x505ffffffe80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x505fffffff00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x505fffffff80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x506000000000: fa fa fa fa 00 00 00 00 00 00 00 00 fa fa fa fa\n=>0x506000000080: fa[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x506000000100: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x506000000180: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x506000000200: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x506000000280: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x506000000300: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==604==ABORTING\nExit code: 1\n",
+  "vulnerable_function_source": "/*\n * Extracted and simplified from miniz_zip.c, function mz_zip_file_stat_internal()\n * (lines ~1305-1319 in the original), specifically the filename/comment copy logic.\n *\n * Original bug pattern: the comment's source offset is computed using\n * FILENAME_LEN and EXTRA_LEN, both read directly from the untrusted ZIP\n * central directory header, with no bounds check against the actual\n * buffer size before being used in a memcpy.\n */\n#include <string.h>\n#include <stdint.h>\n\n#define CENTRAL_DIR_HEADER_SIZE 46\n#define MAX_COMMENT_SIZE 256\n\ntypedef unsigned short mz_uint16;\ntypedef unsigned int   mz_uint32;\n\nstatic mz_uint16 read_le16(const unsigned char *p) {\n    return (mz_uint16)(p[0] | (p[1] << 8));\n}\n\n/*\n * p               = pointer to a central directory header buffer\n * p_buf_len       = actual allocated length of p (for bounds-checking demo)\n * out_comment     = destination buffer (size MAX_COMMENT_SIZE)\n */\nvoid copy_zip_comment(const unsigned char *p, size_t p_buf_len, char *out_comment) {\n    mz_uint16 filename_len = read_le16(p + 28); /* offset of filename length field */\n    mz_uint16 extra_len    = read_le16(p + 30); /* offset of extra field length */\n    mz_uint16 comment_len  = read_le16(p + 32); /* offset of comment length field */\n\n    mz_uint32 n = comment_len;\n    if (n > MAX_COMMENT_SIZE - 1) n = MAX_COMMENT_SIZE - 1;\n\n    /* VULNERABLE: source offset uses attacker-controlled filename_len and\n       extra_len with no check that CENTRAL_DIR_HEADER_SIZE + filename_len +\n       extra_len + n stays within p_buf_len. */\n    memcpy(out_comment, p + CENTRAL_DIR_HEADER_SIZE + filename_len + extra_len, n);\n    out_comment[n] = '\\0';\n}\n",
+  "patch": {
+    "model": "manual-patch",
+    "diff": "--- vulnerable_func.c\n+++ vulnerable_func.c\n@@ -33,9 +33,11 @@\n     mz_uint32 n = comment_len;\n     if (n > MAX_COMMENT_SIZE - 1) n = MAX_COMMENT_SIZE - 1;\n \n-    /* VULNERABLE: source offset uses attacker-controlled filename_len and\n-       extra_len with no check that CENTRAL_DIR_HEADER_SIZE + filename_len +\n-       extra_len + n stays within p_buf_len. */\n-    memcpy(out_comment, p + CENTRAL_DIR_HEADER_SIZE + filename_len + extra_len, n);\n-    out_comment[n] = '\\0';\n-}\n+    /* FIX: bounds-check the source offset before copying.\n+       filename_len and extra_len are attacker-controlled from the ZIP header.\n+       Without this check, a crafted ZIP can read 100+ bytes past the heap buffer. */\n+    if ((size_t)(CENTRAL_DIR_HEADER_SIZE + filename_len + extra_len + n) > p_buf_len) {\n+        out_comment[0] = '\\0';\n+        return;\n+    }\n+    memcpy(out_comment, p + CENTRAL_DIR_HEADER_SIZE + filename_len + extra_len, n);}\n",
+    "explanation": null
+  },
+  "verification": {
+    "started_at": 1787397617.3167727,
+    "patch_file": "evidence/real_001.diff",
+    "stages": {
+      "before_patch_build": {
+        "passed": true,
+        "log": ""
+      },
+      "before_patch_crash_replay": {
+        "expected": "CRASH (proves the bug is real)",
+        "actually_crashed": true,
+        "exit_code": 1,
+        "output_excerpt": "rc/libsanitizer/sanitizer_common/sanitizer_common_interceptors_memintrinsics.inc:115 in memcpy\nShadow bytes around the buggy address:\n  0x505ffffffe00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x505ffffffe80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x505fffffff00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x505fffffff80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x506000000000: fa fa fa fa 00 00 00 00 00 00 00 00 fa fa fa fa\n=>0x506000000080: fa[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x506000000100: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x506000000180: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x506000000200: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x506000000280: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x506000000300: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==777==ABORTING\n"
+      },
+      "apply_patch": {
+        "passed": true,
+        "method": "git apply",
+        "log": ""
+      },
+      "rebuild": {
+        "passed": true,
+        "log": ""
+      },
+      "crash_replay": {
+        "passed": true,
+        "expected": "NO CRASH",
+        "exit_code": 0,
+        "output_excerpt": "Comment (first bytes): \n"
+      },
+      "regression_tests": {
+        "passed": true,
+        "tests": [
+          {
+            "test": "empty_copy",
+            "passed": true,
+            "exit_code": 0,
+            "output_excerpt": "Comment (first bytes): \n"
+          },
+          {
+            "test": "exact_fit",
+            "passed": true,
+            "exit_code": 0,
+            "output_excerpt": "Comment (first bytes): \n"
+          },
+          {
+            "test": "small_copy",
+            "passed": true,
+            "exit_code": 0,
+            "output_excerpt": "Comment (first bytes): \n"
+          },
+          {
+            "test": "max_valid",
+            "passed": true,
+            "exit_code": 0,
+            "output_excerpt": "Comment (first bytes): \n"
+          }
+        ]
+      }
+    },
+    "overall_pass": true,
+    "finished_at": 1787397622.932419,
+    "duration_seconds": 5.62
+  },
+  "verdict": "VERIFIED_FIX"
+}

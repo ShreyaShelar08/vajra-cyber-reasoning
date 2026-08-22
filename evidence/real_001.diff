@@ -1,0 +1,20 @@
+--- vulnerable_func.c
++++ vulnerable_func.c
+@@ -33,9 +33,11 @@
+     mz_uint32 n = comment_len;
+     if (n > MAX_COMMENT_SIZE - 1) n = MAX_COMMENT_SIZE - 1;
+ 
+-    /* VULNERABLE: source offset uses attacker-controlled filename_len and
+-       extra_len with no check that CENTRAL_DIR_HEADER_SIZE + filename_len +
+-       extra_len + n stays within p_buf_len. */
+-    memcpy(out_comment, p + CENTRAL_DIR_HEADER_SIZE + filename_len + extra_len, n);
+-    out_comment[n] = '\0';
+-}
++    /* FIX: bounds-check the source offset before copying.
++       filename_len and extra_len are attacker-controlled from the ZIP header.
++       Without this check, a crafted ZIP can read 100+ bytes past the heap buffer. */
++    if ((size_t)(CENTRAL_DIR_HEADER_SIZE + filename_len + extra_len + n) > p_buf_len) {
++        out_comment[0] = '\0';
++        return;
++    }
++    memcpy(out_comment, p + CENTRAL_DIR_HEADER_SIZE + filename_len + extra_len, n);}

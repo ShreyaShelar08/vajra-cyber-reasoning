@@ -1,0 +1,63 @@
+{
+  "started_at": 1787397617.3167727,
+  "patch_file": "evidence/real_001.diff",
+  "stages": {
+    "before_patch_build": {
+      "passed": true,
+      "log": ""
+    },
+    "before_patch_crash_replay": {
+      "expected": "CRASH (proves the bug is real)",
+      "actually_crashed": true,
+      "exit_code": 1,
+      "output_excerpt": "rc/libsanitizer/sanitizer_common/sanitizer_common_interceptors_memintrinsics.inc:115 in memcpy\nShadow bytes around the buggy address:\n  0x505ffffffe00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x505ffffffe80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x505fffffff00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x505fffffff80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x506000000000: fa fa fa fa 00 00 00 00 00 00 00 00 fa fa fa fa\n=>0x506000000080: fa[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x506000000100: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x506000000180: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x506000000200: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x506000000280: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x506000000300: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==777==ABORTING\n"
+    },
+    "apply_patch": {
+      "passed": true,
+      "method": "git apply",
+      "log": ""
+    },
+    "rebuild": {
+      "passed": true,
+      "log": ""
+    },
+    "crash_replay": {
+      "passed": true,
+      "expected": "NO CRASH",
+      "exit_code": 0,
+      "output_excerpt": "Comment (first bytes): \n"
+    },
+    "regression_tests": {
+      "passed": true,
+      "tests": [
+        {
+          "test": "empty_copy",
+          "passed": true,
+          "exit_code": 0,
+          "output_excerpt": "Comment (first bytes): \n"
+        },
+        {
+          "test": "exact_fit",
+          "passed": true,
+          "exit_code": 0,
+          "output_excerpt": "Comment (first bytes): \n"
+        },
+        {
+          "test": "small_copy",
+          "passed": true,
+          "exit_code": 0,
+          "output_excerpt": "Comment (first bytes): \n"
+        },
+        {
+          "test": "max_valid",
+          "passed": true,
+          "exit_code": 0,
+          "output_excerpt": "Comment (first bytes): \n"
+        }
+      ]
+    }
+  },
+  "overall_pass": true,
+  "finished_at": 1787397622.932419,
+  "duration_seconds": 5.62
+}

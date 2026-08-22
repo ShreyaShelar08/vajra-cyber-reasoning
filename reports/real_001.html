@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fix Certificate — real_001</title>
+<style>
+  :root {
+    --bg: #0b0d12;
+    --panel: #12151c;
+    --panel-2: #171b24;
+    --border: #262b36;
+    --text: #e6e9ef;
+    --muted: #8b93a3;
+    --accent: #5b8cff;
+    --green: #35c98f;
+    --red: #ff5d6c;
+    --amber: #f5b942;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    line-height: 1.55; padding: 40px 20px 80px;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  header { margin-bottom: 28px; }
+  .eyebrow { color: var(--muted); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+  h1 { font-size: 28px; margin: 6px 0 4px; }
+  .meta { color: var(--muted); font-size: 14px; }
+
+  .verdict {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: 10px; font-weight: 700;
+    font-size: 15px; margin: 18px 0 28px; border: 1px solid var(--border);
+  }
+  .verdict-pass { background: rgba(53,201,143,.12); color: var(--green); border-color: rgba(53,201,143,.35); }
+  .verdict-fail { background: rgba(255,93,108,.12); color: var(--red); border-color: rgba(255,93,108,.35); }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 14px; padding: 22px 24px; margin-bottom: 20px;
+  }
+  .card h2 { margin-top: 0; font-size: 16px; letter-spacing: .02em; color: var(--text); }
+  .card h2 .sub { color: var(--muted); font-weight: 400; font-size: 13px; }
+
+  pre.log, pre.code {
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; overflow-x: auto; font-size: 12.5px; color: #c9d1e0;
+    max-height: 320px; overflow-y: auto; white-space: pre-wrap; word-break: break-word;
+  }
+  pre.diff {
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; overflow-x: auto; font-size: 13px; max-height: 420px; overflow-y: auto;
+  }
+  .diff-add { color: var(--green); }
+  .diff-del { color: var(--red); }
+
+  .stage { border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; background: var(--panel-2); }
+  .stage-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .stage-title { font-weight: 600; font-size: 14px; }
+
+  .badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; letter-spacing: .04em; }
+  .badge.pass { background: rgba(53,201,143,.15); color: var(--green); }
+  .badge.fail { background: rgba(255,93,108,.15); color: var(--red); }
+  .badge.unknown { background: rgba(139,147,163,.15); color: var(--muted); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } }
+
+  .explanation { color: #cdd3e0; font-size: 14.5px; }
+  footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 40px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Automated Repair Pipeline — Fix Certificate</div>
+    <h1>Run: real_001</h1>
+    <div class="meta">Generated 2026-08-22 11:20:43 UTC &middot; Model: manual-patch</div>
+  </header>
+
+  <div class="verdict verdict-pass">
+    &#10003; VERIFIED FIX
+  </div>
+
+  <div class="card">
+    <h2>1. Crash Trace <span class="sub">— as reproduced with AddressSanitizer</span></h2>
+    <pre class="log">=================================================================
+==604==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x50600000008e at pc 0x74b1494fb42e bp 0x7ffe7ba72f00 sp 0x7ffe7ba726a8
+READ of size 100 at 0x50600000008e thread T0
+    #0 0x74b1494fb42d in memcpy ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors_memintrinsics.inc:115
+    #1 0x56f5282f6745 in copy_zip_comment /mnt/c/Users/Personal/Desktop/vajra-cyber-reasoning/real_crash/vulnerable_func.c:39
+    #2 0x56f5282f6527 in main /mnt/c/Users/Personal/Desktop/vajra-cyber-reasoning/real_crash/harness.c:22
+    #3 0x74b14902a1c9 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #4 0x74b14902a28a in __libc_start_main_impl ../csu/libc-start.c:360
+    #5 0x56f5282f6284 in _start (/mnt/c/Users/Personal/Desktop/vajra-cyber-reasoning/real_crash/test_harness+0x1284) (BuildId: 257f724e001c87db3b5d70b0aac890eaeea13a5d)
+
+0x50600000008e is located 46 bytes after 64-byte region [0x506000000020,0x506000000060)
+allocated by thread T0 here:
+    #0 0x74b1494fd9c7 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69
+    #1 0x56f5282f64ae in main /mnt/c/Users/Personal/Desktop/vajra-cyber-reasoning/real_crash/harness.c:16
+    #2 0x74b14902a1c9 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #3 0x74b14902a28a in __libc_start_main_impl ../csu/libc-start.c:360
+    #4 0x56f5282f6284 in _start (/mnt/c/Users/Personal/Desktop/vajra-cyber-reasoning/real_crash/test_harness+0x1284) (BuildId: 257f724e001c87db3b5d70b0aac890eaeea13a5d)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors_memintrinsics.inc:115 in memcpy
+Shadow bytes around the buggy address:
+  0x505ffffffe00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x505ffffffe80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x505fffffff00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x505fffffff80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x506000000000: fa fa fa fa 00 00 00 00 00 00 00 00 fa fa fa fa
+=&gt;0x506000000080: fa[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x506000000100: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x506000000180: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x506000000200: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x506000000280: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x506000000300: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==604==ABORTING
+Exit code: 1
+</pre>
+  </div>
+
+  <div class="card">
+    <h2>2. Vulnerable Function <span class="sub">— exact source sent to the model (not the whole repo)</span></h2>
+    <pre class="code">/*
+ * Extracted and simplified from miniz_zip.c, function mz_zip_file_stat_internal()
+ * (lines ~1305-1319 in the original), specifically the filename/comment copy logic.
+ *
+ * Original bug pattern: the comment&#x27;s source offset is computed using
+ * FILENAME_LEN and EXTRA_LEN, both read directly from the untrusted ZIP
+ * central directory header, with no bounds check against the actual
+ * buffer size before being used in a memcpy.
+ */
+#include &lt;string.h&gt;
+#include &lt;stdint.h&gt;
+
+#define CENTRAL_DIR_HEADER_SIZE 46
+#define MAX_COMMENT_SIZE 256
+
+typedef unsigned short mz_uint16;
+typedef unsigned int   mz_uint32;
+
+static mz_uint16 read_le16(const unsigned char *p) {
+    return (mz_uint16)(p[0] | (p[1] &lt;&lt; 8));
+}
+
+/*
+ * p               = pointer to a central directory header buffer
+ * p_buf_len       = actual allocated length of p (for bounds-checking demo)
+ * out_comment     = destination buffer (size MAX_COMMENT_SIZE)
+ */
+void copy_zip_comment(const unsigned char *p, size_t p_buf_len, char *out_comment) {
+    mz_uint16 filename_len = read_le16(p + 28); /* offset of filename length field */
+    mz_uint16 extra_len    = read_le16(p + 30); /* offset of extra field length */
+    mz_uint16 comment_len  = read_le16(p + 32); /* offset of comment length field */
+
+    mz_uint32 n = comment_len;
+    if (n &gt; MAX_COMMENT_SIZE - 1) n = MAX_COMMENT_SIZE - 1;
+
+    /* VULNERABLE: source offset uses attacker-controlled filename_len and
+       extra_len with no check that CENTRAL_DIR_HEADER_SIZE + filename_len +
+       extra_len + n stays within p_buf_len. */
+    memcpy(out_comment, p + CENTRAL_DIR_HEADER_SIZE + filename_len + extra_len, n);
+    out_comment[n] = &#x27;\0&#x27;;
+}
+</pre>
+  </div>
+
+  <div class="card">
+    <h2>3. Model-Suggested Patch</h2>
+    <pre class="diff">--- vulnerable_func.c
++++ vulnerable_func.c
+@@ -33,9 +33,11 @@
+     mz_uint32 n = comment_len;
+     if (n &gt; MAX_COMMENT_SIZE - 1) n = MAX_COMMENT_SIZE - 1;
+ 
+-    /* VULNERABLE: source offset uses attacker-controlled filename_len and
+-       extra_len with no check that CENTRAL_DIR_HEADER_SIZE + filename_len +
+-       extra_len + n stays within p_buf_len. */
+-    memcpy(out_comment, p + CENTRAL_DIR_HEADER_SIZE + filename_len + extra_len, n);
+-    out_comment[n] = &#x27;\0&#x27;;
+-}
++    /* FIX: bounds-check the source offset before copying.
++       filename_len and extra_len are attacker-controlled from the ZIP header.
++       Without this check, a crafted ZIP can read 100+ bytes past the heap buffer. */
++    if ((size_t)(CENTRAL_DIR_HEADER_SIZE + filename_len + extra_len + n) &gt; p_buf_len) {
++        out_comment[0] = &#x27;\0&#x27;;
++        return;
++    }
++    memcpy(out_comment, p + CENTRAL_DIR_HEADER_SIZE + filename_len + extra_len, n);}
+</pre>
+    
+  </div>
+
+  <div class="card">
+    <h2>4. Verification <span class="sub">— independent proof the patch works</span></h2>
+
+    <div class="grid2">
+      <div class="stage">
+        <div class="stage-head"><span class="stage-title">Before patch: input crashes original code?</span>
+          <span class="badge pass">PASS</span>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-head"><span class="stage-title">After patch: same input no longer crashes?</span>
+          <span class="badge pass">PASS</span>
+        </div>
+      </div>
+    </div>
+
+    
+        <div class="stage">
+          <div class="stage-head">
+            <span class="stage-title">Apply patch</span>
+            <span class="badge pass">PASS</span>
+          </div>
+          
+        </div>
+    
+        <div class="stage">
+          <div class="stage-head">
+            <span class="stage-title">Rebuild (ASan)</span>
+            <span class="badge pass">PASS</span>
+          </div>
+          
+        </div>
+    
+        <div class="stage">
+          <div class="stage-head">
+            <span class="stage-title">Replay original crashing input</span>
+            <span class="badge pass">PASS</span>
+          </div>
+          <pre class="log">Comment (first bytes): 
+</pre>
+        </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="stage-title">Regression tests (existing behavior unaffected)</span>
+        <span class="badge pass">PASS</span>
+      </div>
+      <table>
+        <tr><th>Test</th><th>Result</th><th>Detail</th></tr>
+        <tr>
+              <td>empty_copy</td>
+              <td><span class="badge pass">PASS</span></td>
+              <td>exit=0</td>
+            </tr><tr>
+              <td>exact_fit</td>
+              <td><span class="badge pass">PASS</span></td>
+              <td>exit=0</td>
+            </tr><tr>
+              <td>small_copy</td>
+              <td><span class="badge pass">PASS</span></td>
+              <td>exit=0</td>
+            </tr><tr>
+              <td>max_valid</td>
+              <td><span class="badge pass">PASS</span></td>
+              <td>exit=0</td>
+            </tr>
+      </table>
+    </div>
+
+    <p class="meta">Total verification time: 5.62s</p>
+  </div>
+
+  <footer>
+    Generated automatically by the local repair pipeline (Ollama + verify_patch.py).<br/>
+    Fake/demo runs are clearly labeled as synthetic in the accompanying README.
+  </footer>
+
+</div>
+</body>
+</html>
